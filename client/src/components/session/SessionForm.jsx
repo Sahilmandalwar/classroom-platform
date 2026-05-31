@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createSession } from "../../services/sessionServices";
 
-const SessionForm = ({ classroomId, setSessions }) => {
+const SessionForm = ({ classroomId}) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
@@ -24,19 +24,19 @@ const SessionForm = ({ classroomId, setSessions }) => {
 
       // 1. Create the session
       const data = await createSession(classroomId, formData);
-      setSessions((prev)=>[data.session, ...prev])
+      // setSessions((prev)=>[data.session, ...prev])
       // 2. Clear the form state
       setTitle("");
       setDescription("");
       setMeetingLink("");
       setScheduledAt("");
 
-      
+      setIsSubmitting(false);
       
     } catch (error) {
       console.error("Error creating session:", error);
       setFormError("Failed to schedule session. Please try again.");
-      setIsSubmitting(false);
+      
     }
   };
 

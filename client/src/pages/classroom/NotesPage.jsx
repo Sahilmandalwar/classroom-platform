@@ -5,6 +5,7 @@ import { BookOpen, UploadCloud, FileIcon } from "lucide-react";
 import { useAuth } from "../../contexts/authContext";
 import { uploadFile, fetchFile } from "../../services/notesServices";
 import NotesCard from "../../components/notes/NotesCard";
+import socket from "../../socket";
 
 const NotesPage = ({ activeTab, classroom }) => {
   const { currentUserId } = useAuth();
@@ -22,6 +23,32 @@ const NotesPage = ({ activeTab, classroom }) => {
 
   // --- INITIAL DATA FETCH ---
   useEffect(() => {
+    socket.on("uploadedNotes",(data)=>{
+      setNotes((prev)=>{
+        const alreadyExist = prev.some((item)=>
+        item._id === data.notes._id);
+
+        if(alreadyExist) {
+          return prev;
+        }
+
+        return [data.notes, ...prev];
+      })
+    });
+
+    socket.on("deletedNotes", (data) => {
+      setNotes((prev) => {
+        const alreadyDeleted = !prev.some(
+          (item) => item._id === data.deletedNotes._id,
+        );
+
+        if (alreadyDeleted) {
+          return prev;
+        }
+
+        return prev.filter((item) => item._id !== data.deletedNotes._id);
+      });
+    });
     if (activeTab === "notes" && classroom?._id) {
       const getInitialNotes = async () => {
         setIsLoading(true);
@@ -38,7 +65,12 @@ const NotesPage = ({ activeTab, classroom }) => {
 
       getInitialNotes();
     }
-  }, [activeTab, classroom?._id]);
+
+    return ()=>{
+      socket.off("uploadedNotes");
+      socket.off("deletedNotes");
+    }
+  }, [activeTab, classroom?._id, setNotes]);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -75,8 +107,7 @@ const NotesPage = ({ activeTab, classroom }) => {
       setFile(null);
 
       // 4. Fetch the updated notes list to refresh the UI instantly
-      const updatedData = await fetchFile(classroomId);
-      setNotes(updatedData.notes || []);
+      
     } catch (error) {
       console.error("Upload error:", error);
       setFormError("Failed to upload note. Please try again.");

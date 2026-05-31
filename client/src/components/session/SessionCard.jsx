@@ -4,7 +4,7 @@ import { Calendar, Clock, Video, ExternalLink, Trash2 } from "lucide-react";
 import { deleteSession } from "../../services/sessionServices";
 
 // ADDED: isTeacher and onDelete props
-const SessionCard = ({ session, isTeacher, setSessions }) => {
+const SessionCard = ({ session, isTeacher }) => {
   // Use the scheduled time if it exists, otherwise fallback to creation date
   // FIXED: Changed scheduleAt to scheduledAt to match your backend model
   const dateObj = new Date(session.scheduledAt || session.createdAt);
@@ -23,8 +23,7 @@ const SessionCard = ({ session, isTeacher, setSessions }) => {
   const onDelete = async(sessionId) => {
     try{
       const data = await deleteSession(sessionId);
-      setSessions((prev)=>prev.filter((item)=> item._id !== data.deletedSession._id));
-      console.log("deleted");
+     
     }catch(error){
       console.log(error?.message);
     }

@@ -40,6 +40,18 @@ export const markAttendance = async(req, res) => {
         });
     }
 
+    const validStatuses = ["present", "absent"];
+
+    const invalidStatus = records.find(
+        (record) => !validStatuses.includes(record.status)
+        );
+
+    if(invalidStatus){
+        return res.status(400).json({
+            message: "Invalid attendance status"
+        });
+    }
+
     const operations = records.map((record)=>({
         updateOne: {
             filter : {
@@ -62,8 +74,14 @@ export const markAttendance = async(req, res) => {
 
     await Attendance.bulkWrite(operations);
 
+    const updatedAttendance = await Attendance.find({
+        session: sessionId
+    }).populate("student", "name email");
+
+
     return res.status(200).json({
         message: "Attendance marked successfully",
+        updatedAttendance
        
     });
    } catch(error) {

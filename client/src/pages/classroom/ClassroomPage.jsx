@@ -1,11 +1,11 @@
-
-import {  useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Megaphone,
   Video,
   BookOpen,
+  ClipboardCheck,
+  MessageCircleReply
 } from "lucide-react";
-
 
 import ClassroomHeader from "./HeaderClassroom.jsx";
 import AnnoucementPage from "./AnnoucementPage.jsx";
@@ -14,11 +14,16 @@ import { fetchAllAnnouncement } from "../../services/announcementServices.js";
 import SessionPage from "./SessionPage.jsx";
 import NotesPage from "./NotesPage.jsx";
 import { useParams, useSearchParams } from "react-router-dom";
+import AttendancePage from "./AttendancePage.jsx";
+import { fetchSessions } from "../../services/sessionServices.js";
+import { useAuth } from "../../contexts/authContext.jsx";
+import socket from "../../socket.js";
+import ChatPage from "./Chatpage.jsx";
 
 const ClassroomPage = () => {
   const { classId } = useParams();
+  const [sessions, setSessions] = useState([]);
   
-
   // Data States
   const [classroom, setClassroom] = useState(null);
 
@@ -26,25 +31,80 @@ const ClassroomPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
+  
+  // ✅ ADDED: State to hold the online user count globally for the room
+  const [onlineUserCount, setOnlineUserCount] = useState(0);
 
   const [searchParams, setSearchParams] = useSearchParams();
- // Read the "tab" from the URL. If it doesn't exist, default to "announcements"
+  // Read the "tab" from the URL. If it doesn't exist, default to "announcements"
   const activeTab = searchParams.get("tab") || "announcements";
-
-  // Form States
-
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const { currentUserId } = useAuth();
+  
   // --- 1. INITIAL DATA FETCH ---
   useEffect(() => {
+    if(classId){
+      socket.emit("joinClassRoom", {classId, userId : currentUserId});
+    }
+
+    // ✅ ADDED: Listen for the online user count as soon as we join the room!
+    socket.on("ClassroomOnlineUsers", (count) => {
+      setOnlineUserCount(count);
+    });
+
+    socket.on("newSession", (data)=>{
+      setSessions((prev)=>{
+        const alreadyExist = prev.some((item)=>
+        item._id === data.session._id);
+
+        if (alreadyExist) {
+          return prev;
+        }
+        return [data.session, ...prev];
+      })
+    });
+
+    socket.on("deletedSession", (data)=>{
+      setSessions((prev)=>{
+        const alreadyDeleted = !prev.some((item)=>
+          item._id === data.session._id,
+        )
+
+        if(alreadyDeleted) {
+          return prev;
+        }
+
+        return prev.filter((item) =>
+          item._id !== data.session._id,
+        );
+      })
+    })
+
     const getPageData = async () => {
       try {
         setIsLoading(true);
         const data = await fetchClass(classId);
         setClassroom(data.classroom || null);
+        
       } catch (error) {
         console.error("Error fetching classroom:", error);
         setError("Failed to load classroom details.");
       } finally {
         setIsLoading(false);
+      }
+    };
+
+    const getSessions = async () => {
+      try {
+        setSessionLoading(true);
+
+        const data = await fetchSessions(classId);
+
+        setSessions(data.sessions || []);
+      } catch (error) {
+        console.error("Error fetching sessions:", error);
+      } finally {
+        setSessionLoading(false);
       }
     };
 
@@ -60,8 +120,16 @@ const ClassroomPage = () => {
     if (classId) {
       getPageData();
       getAnnouncements();
+      getSessions();
     }
-  }, [classId]);
+
+    return ()=>{
+      socket.emit("leaveClassroomRoom", {classId, userId : currentUserId});
+      socket.off("ClassroomOnlineUsers"); // ✅ ADDED: Cleanup the listener
+      socket.off("newSession");
+      socket.off("deletedSession");
+    }
+  }, [classId, currentUserId, setSessions]);
 
   if (isLoading)
     return (
@@ -84,7 +152,12 @@ const ClassroomPage = () => {
     { id: "announcements", label: "Announcements", icon: Megaphone },
     { id: "sessions", label: "Live Sessions", icon: Video },
     { id: "notes", label: "Study Notes", icon: BookOpen },
+    { id: "attendance", label: "Attendance", icon: ClipboardCheck },
+    { id: "chats", label : "Chat Section", icon: MessageCircleReply}
   ];
+
+   
+  const isTeacher = classroom?.teacher?._id === currentUserId;
 
   // --- 6. MAIN UI ---
   return (
@@ -129,11 +202,33 @@ const ClassroomPage = () => {
           />
 
           {/* --- SESSIONS TAB CONTENT (Placeholder) --- */}
-
-          <SessionPage activeTab={activeTab} classroom={classroom} />
+          <SessionPage
+            activeTab={activeTab}
+            classroom={classroom}
+            setSessions={setSessions}
+            sessions={sessions}
+            sessionLoading={sessionLoading}
+            isTeacher={isTeacher}
+          />
 
           {/* --- NOTES TAB CONTENT (Placeholder) --- */}
           <NotesPage activeTab={activeTab} classroom={classroom} />
+
+          {/* --- ATTENDANCE TAB CONTENT (Placeholder) --- */}
+          <AttendancePage
+            activeTab={activeTab}
+            classroom={classroom}
+            isTeacher={isTeacher}
+            sessions={sessions}
+          />
+
+          {/* --- CHAT TAB CONTENT ---  */}
+          {/* ✅ ADDED: Passing the onlineUserCount down as a prop */}
+          <ChatPage 
+            activeTab={activeTab} 
+            classroom={classroom} 
+            onlineUserCount={onlineUserCount} 
+          />
         </div>
       </div>
     </div>

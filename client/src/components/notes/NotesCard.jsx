@@ -1,10 +1,21 @@
 import { FileText, LucideBookOpenText, Trash2 } from "lucide-react";
 import { useAuth } from "../../contexts/authContext";
+import { deleteNotes } from "../../services/notesServices";
 
 const NotesCard = ({note, classroom}) => {
 
     const API_URL = "http://localhost:5000"; 
     const {currentUserId} = useAuth();
+
+    const handleDeleteNotes = async() => {
+      try{
+        console.log('hellow');
+        const data = await deleteNotes(note._id);
+      }catch(error) {
+        console.log(error?.message);
+      }
+
+    }
 
   return (
     <div>
@@ -45,7 +56,11 @@ const NotesCard = ({note, classroom}) => {
           <div className="flex items-center gap-2">
             {/* Delete Button (Teacher Only) */}
             {currentUserId === classroom?.teacher?._id && (
-              <button className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+              <button className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" onClick={(e)=>{
+                e.preventDefault();
+               e.stopPropagation();
+                handleDeleteNotes();
+              }}>
                 <Trash2 className="w-4 h-4" />
               </button>
             )}

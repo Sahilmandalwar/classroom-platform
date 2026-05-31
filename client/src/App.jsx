@@ -1,10 +1,10 @@
+// Inside App.jsx (or a global Layout component)
+import { RouterProvider } from "react-router-dom";
+import router from './routes/appRouter';
 
-const App = () => {
+export const App = () => {
+
   return (
-    <div>
-        <h1>AI Classroom Platform</h1>
-    </div>
+     <RouterProvider router={router} />  
   )
 }
-
-export default App

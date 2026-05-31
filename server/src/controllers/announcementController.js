@@ -1,5 +1,8 @@
 import Announcement from "../models/Announcement.js";
 import Classroom from "../models/Classroom.js";
+import Notification from "../models/Notification.js";
+
+import { getIO } from "../socket.js";
 
 export const createAnnouncement = async(req, res) => {
     try {
@@ -25,6 +28,33 @@ export const createAnnouncement = async(req, res) => {
             message,
             postedBy,
             classroom: classroomId
+        });
+        await announcement.populate("postedBy", "name");
+        
+        const notifications = classroom.students.map((student)=>({
+            
+            receiver : student,
+            sender : req.user.id,
+            classroom : classroomId,
+            type : 'announcement',
+            message : `New announcement posted in ${classroom.title}`,
+            isRead : false,
+        }))
+
+        await Notification.insertMany(notifications);
+
+
+        const io = getIO();
+
+        notifications.forEach((notification)=>{
+            io.to(notification.receiver.toString()).emit("annoucementNotification",{
+                notification,
+                message : "notification received"
+            })
+        })
+        io.to(classroomId).emit("newAnnouncement", {
+            message : "new Announcment Posted",
+            announcement
         })
 
         res.status(201).json({
@@ -102,8 +132,15 @@ export const deleteAnnouncement = async(req, res)=> {
                 message: "Unauthorized access",
             })
         }
-
+        
         await Announcement.deleteOne({_id: announcementId});
+        const io = getIO();
+        io.emit("deletedAnnouncement",{
+            message : "Announcement was deleted",
+            deletedAnnouncement : announcement
+            
+        })
+
         res.status(200).json({
             message: "announcement deleted successfully",
         })

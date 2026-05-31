@@ -1,6 +1,7 @@
 import Session from "../models/Session.js";
 import Classroom from "../models/Classroom.js";
-
+import { getIO } from "../socket.js";
+import Notification from "../models/Notification.js";
 
 export const createSession = async(req, res) => {
     try{
@@ -16,7 +17,7 @@ export const createSession = async(req, res) => {
 
         const createdBy = req.user.id;
 
-        const classroom = await Classroom.exists({
+        const classroom = await Classroom.findOne({
             _id: classroomId,
             teacher : createdBy
         })
@@ -32,6 +33,32 @@ export const createSession = async(req, res) => {
             classroom: classroomId,
             createdBy
         })
+
+        const notifications = classroom.students.map((studentId)=>({
+            receiver : studentId,
+            sender : req.user.id,
+            classroom : classroomId,
+            type : 'session',
+            message : `New session created in ${classroom.title}`,
+            isRead : false
+        }))
+
+        await Notification.insertMany(notifications);
+
+        const io = getIO();
+         notifications.forEach((notification)=>{
+            io.to(notification.receiver.toString()).emit("sessionNotification",{
+                notification,
+                message : "notification received"
+            })
+        })
+        io.to(classroomId).emit("newSession", {
+            message : "new Session created",
+            session
+        })
+
+
+     
 
         res.status(201).json({
             message: "Session created successfully",
@@ -96,6 +123,14 @@ export const deleteSession = async(req,res)=>{
             })
         }
         const deletedSession = await Session.findByIdAndDelete(sessionId);
+
+        const io = getIO();
+
+        io.emit("deletedSession",{
+            message : "deleted a session",
+            session
+        })
+        
         res.status(200).json({
             message: "deleted session successfully",
             deletedSession

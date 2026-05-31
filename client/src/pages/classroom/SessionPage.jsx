@@ -1,41 +1,22 @@
 
 
 import { LayoutDashboard, PlusCircle } from "lucide-react";
-import { useEffect, useState } from "react";
 
-import { fetchSessions } from "../../services/sessionServices.js";
 import SessionList from "../../components/session/SessionList.jsx";
 import SessionForm from "../../components/session/SessionForm.jsx";
-import { useAuth } from "../../contexts/authContext.jsx";
 
-const SessionPage = ({ activeTab, classroom }) => {
-  const [sessions, setSessions] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { currentUserId } = useAuth();
+const SessionPage = ({
+  activeTab,
+  classroom,
+  sessions,
+  sessionLoading,
+  isTeacher
+}) => {
+ 
 
   // Determine if user is the teacher
-  const isTeacher = currentUserId === classroom?.teacher?._id;
 
-  useEffect(() => {
-    const fetchClassSessions = async () => {
-      if (!classroom?._id) return;
-
-      setIsLoading(true);
-      try {
-        const data = await fetchSessions(classroom._id);
-        setSessions(data.sessions || []);
-      } catch (error) {
-        console.error("Failed to fetch sessions:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Only fetch if the tab is active to save API calls
-    if (activeTab === "sessions") {
-      fetchClassSessions();
-    }
-  }, [classroom?._id, activeTab]);
+ 
 
   // Early return keeps the JSX tree clean
   if (activeTab !== "sessions") return null;
@@ -57,7 +38,9 @@ const SessionPage = ({ activeTab, classroom }) => {
           {/* Centering the form for a cleaner look */}
           <div className="flex justify-center w-full">
             <div className="w-full max-w-7xl">
-              <SessionForm classroomId={classroom?._id} setSessions={setSessions}/>
+              <SessionForm
+                classroomId={classroom?._id}
+              />
             </div>
           </div>
         </div>
@@ -74,7 +57,7 @@ const SessionPage = ({ activeTab, classroom }) => {
           </h2>
         </div>
 
-        {isLoading ? (
+        {sessionLoading ? (
           <div className="flex flex-col items-center justify-center h-48 space-y-4">
             <div className="w-8 h-8 border-4 border-slate-700 border-t-emerald-500 rounded-full animate-spin"></div>
             <span className="text-slate-500 text-sm font-medium animate-pulse">
@@ -82,7 +65,10 @@ const SessionPage = ({ activeTab, classroom }) => {
             </span>
           </div>
         ) : (
-          <SessionList sessions={sessions} isTeacher={isTeacher} setSessions={setSessions} />
+          <SessionList
+            sessions={sessions}
+            isTeacher={isTeacher}
+          />
         )}
       </div>
     </div>

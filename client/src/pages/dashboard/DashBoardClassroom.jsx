@@ -94,7 +94,7 @@ const DashBoardClassroom = () => {
           /* Cards Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-6">
             {classrooms.map((classroom) => (
-             < ClassroomCards classroom={classroom} handleCopyCode={handleCopyCode} copiedId={copiedId}/>
+             < ClassroomCards classroom={classroom} key={classroom._id} handleCopyCode={handleCopyCode} copiedId={copiedId}/>
             ))}
           </div>
         )}

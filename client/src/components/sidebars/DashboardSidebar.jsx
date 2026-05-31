@@ -41,7 +41,6 @@ const Sidebar = () => {
       try {
         const data = await getCurrentUser();
         // Assuming your API returns { user: { name: '...', role: '...' } }
-        console.log(data);
         if (data && data.user) {
           setUser(data.user.name);
         }

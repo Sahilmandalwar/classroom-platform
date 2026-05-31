@@ -103,7 +103,8 @@ export const fetchClassroom = async(req,res)=>{
                 {teacher : req.user.id},
                 {students : req.user.id},
             ]
-        }).populate("teacher","name email");
+        }).populate("teacher","name email")
+        .populate("students", "name email");
         
         if(!classroom) {
             return res.status(400).json({

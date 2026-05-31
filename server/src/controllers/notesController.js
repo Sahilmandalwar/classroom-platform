@@ -1,5 +1,7 @@
 import Notes from '../models/Notes.js';
 import Classroom from '../models/Classroom.js';
+import { getIO } from '../socket.js';
+import Notification from '../models/Notification.js';
 
 export const uploadNotes = async(req,res) =>{
     try{
@@ -16,7 +18,7 @@ export const uploadNotes = async(req,res) =>{
             })
         }
 
-        const classroom = await Classroom.exists({
+        const classroom = await Classroom.findOne({
             _id: classroomId,
             teacher : createdBy
         })
@@ -33,6 +35,35 @@ export const uploadNotes = async(req,res) =>{
             classroom : classroomId,
             createdBy
         })
+
+        await notes.populate("createdBy", "name email");
+
+        const notifications = classroom.students.map((studentId)=>({
+            receiver : studentId,
+            sender : req.user.id,
+            classroom : classroomId,
+            type : 'notes',
+            message : `notes uploaded in ${classroom.title}`,
+            isRead : false,
+        }))
+
+        await Notification.insertMany(notifications);
+
+        const io = getIO()
+        
+        notifications.forEach((notification)=>{
+            io.to(notification.receiver.toString()).emit("notesNotification",{
+                notification,
+                message : "notification received"
+            })
+        })
+        io.to(classroomId).emit("uploadedNotes", {
+            message : "new notes uploaded",
+            notes
+        })
+
+
+
 
         res.status(201).json({
             message : "Notes uploaded successfully",
@@ -84,4 +115,38 @@ export const getClassroomNotes = async(req, res) => {
                 message: "Server Error",
             });
         }
+}
+
+export const deleteNotes = async(req, res) => {
+    try {
+        const {noteId} = req.params;
+
+        
+        const notes = await Notes.findOne({
+            _id: noteId,
+            createdBy : req.user.id,
+        });
+
+        if(!notes) {
+            return res.status(403).json({
+                message : 'unauthorised request',
+            })
+        }
+
+        await Notes.findByIdAndDelete(noteId);
+
+        const io = getIO();
+        io.emit("deletedNotes", {
+            message : 'notes Deleted',
+            deletedNotes : notes,
+        })
+        res.status(200).json({
+            message: 'notes deleted succefully',
+        })
+
+
+
+    }catch(error){
+
+    }
 }
