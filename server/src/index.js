@@ -42,7 +42,7 @@ app.use("/v1/api/message", messageRoutes);
 const io = initSocket(
   new Server(httpServer, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: process.env.CLIENT_URL,
       methods: ["GET", "POST", "PATCH", "DELETE"],
     },
   })
