@@ -6,9 +6,15 @@ import cloudinary from "../config/cloudinary.js";
 
 const storage = new CloudinaryStorage({
     cloudinary,
-    params: {
-        folder: "ai-classroom-notes",
+    params: async(req, file)=>{
+
+        const extension = file.originalname.split(".").pop();
+        const baseName = file.originalname.split(".")[0];
+        return {
+        folder: "classroom-notes",
         resource_type: "raw",
+        public_id : `${baseName}-${Date.now()}.${extension}`
+        }
     },
 });
 
