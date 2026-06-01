@@ -70,7 +70,7 @@ const SessionCard = ({ session, isTeacher }) => {
         <div className="flex items-center gap-3 text-xs font-medium text-slate-400">
           <div className="flex items-center gap-1.5 bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-700/50">
             <Calendar className="w-3.5 h-3.5 text-emerald-500/70" />
-            {formattedDate}
+            {formattedDate}me
           </div>
           <div className="flex items-center gap-1.5 bg-slate-900/50 px-2.5 py-1 rounded-md border border-slate-700/50">
             <Clock className="w-3.5 h-3.5 text-emerald-500/70" />

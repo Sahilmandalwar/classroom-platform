@@ -1,5 +1,5 @@
 import Classroom from "../models/Classroom.js";
-
+import {getIO} from '../socket.js';
 export const createClassroom = async(req, res) => {
     try{
         const {title, description} = req.body;
@@ -18,6 +18,11 @@ export const createClassroom = async(req, res) => {
             title, description, classCode,
             teacher : req.user.id,
             students : [],
+        });
+
+        const io = getIO();
+        io.to(req.user.id).emit("newClassroomAdded", {
+            classroom
         });
 
         res.status(200).json({

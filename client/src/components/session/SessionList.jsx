@@ -3,7 +3,7 @@
 import { Video } from "lucide-react";
 import SessionCard from "./SessionCard";
 
-const SessionList = ({ sessions, isTeacher, setSessions }) => {
+const SessionList = ({ sessions, isTeacher, setSessions , classroom}) => {
   // Beautiful Empty State
   if (sessions.length === 0) {
     return (
@@ -28,6 +28,7 @@ const SessionList = ({ sessions, isTeacher, setSessions }) => {
         <SessionCard
           key={session._id}
           session={session}
+          classroom={classroom}
           isTeacher={isTeacher}
           setSessions={setSessions}
         />

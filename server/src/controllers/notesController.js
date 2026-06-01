@@ -11,6 +11,7 @@ export const uploadNotes = async(req,res) =>{
         const createdBy = req.user.id;
 
         const file = req.file;
+     
 
         if(!title || !file) {
             return res.status(400).json({
@@ -31,10 +32,12 @@ export const uploadNotes = async(req,res) =>{
 
         const notes = await Notes.create({
             title, description,
-            fileUrl: `/uploads/${file.filename}`,
+            fileUrl: file.path,
             classroom : classroomId,
             createdBy
         })
+
+
 
         await notes.populate("createdBy", "name email");
 
@@ -74,6 +77,7 @@ export const uploadNotes = async(req,res) =>{
 
     }catch(error){
         console.log(error);
+        console.log(error?.message)
         res.status(500).json({
             message: "Server Error",
         });

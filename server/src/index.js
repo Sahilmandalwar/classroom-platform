@@ -1,6 +1,10 @@
+// import dotenv from 'dotenv';
+// dotenv.config();
+
+import 'dotenv/config';
+
 import express from "express";
 import cors from "cors";
-import dotenv from 'dotenv';
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoute.js";
 import classroomRoutes from "./routes/classroomRoute.js";
@@ -13,7 +17,7 @@ import { Server } from "socket.io";
 import { initSocket } from "./socket.js";
 import notificationRoutes from "./routes/notificationRoute.js";
 import messageRoutes from "./routes/messageRoute.js";
-dotenv.config();
+
 
 const port = process.env.PORT || 5000;
 
@@ -25,7 +29,6 @@ connectDB()
 
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static("uploads"));
 
 app.use('/v1/api/auth',authRoutes);
 app.use('/v1/api/classroom', classroomRoutes);
@@ -46,11 +49,9 @@ const io = initSocket(
 );
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
 
   socket.on("joinUserRoom", (userId) => {
     socket.join(userId);
-    console.log(`user joined room: ${userId}`);
   });
 
   socket.on("joinClassRoom", ({ classId, userId }) => {
@@ -67,7 +68,6 @@ io.on("connection", (socket) => {
 
     // Broadcast the new count
     io.to(classId).emit("ClassroomOnlineUsers", classroomOnlineUsers.get(classId).size);
-    console.log(`user ${userId} joined classroom: ${classId}`);
   });
 
   socket.on("leaveClassroomRoom", ({ classId, userId }) => {
@@ -81,7 +81,6 @@ io.on("connection", (socket) => {
       io.to(classId).emit("ClassroomOnlineUsers", classroomOnlineUsers.get(classId).size);
     }
     
-    console.log(`Left classroom room: ${classId}`);
   });
 
   socket.on("typing", ({ classId, userName }) => {
@@ -111,14 +110,13 @@ io.on("connection", (socket) => {
         }
       }
     }
-    console.log("User disconnected:", socket.id);
   });
 });
 
 
 
 app.get("/",(req, res)=>{
-    res.send("Welcome To AI Classroom Platform");
+    res.send("Welcome To Classroom Platform");
 })
 
 httpServer.listen(port, () => {

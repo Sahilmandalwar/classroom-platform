@@ -1,15 +1,13 @@
-import { FileText, LucideBookOpenText, Trash2 } from "lucide-react";
+import { FileText, LucideFileDown, Trash2 } from "lucide-react";
 import { useAuth } from "../../contexts/authContext";
 import { deleteNotes } from "../../services/notesServices";
 
 const NotesCard = ({note, classroom}) => {
 
-    const API_URL = "http://localhost:5000"; 
     const {currentUserId} = useAuth();
 
     const handleDeleteNotes = async() => {
       try{
-        console.log('hellow');
         const data = await deleteNotes(note._id);
       }catch(error) {
         console.log(error?.message);
@@ -56,11 +54,14 @@ const NotesCard = ({note, classroom}) => {
           <div className="flex items-center gap-2">
             {/* Delete Button (Teacher Only) */}
             {currentUserId === classroom?.teacher?._id && (
-              <button className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors" onClick={(e)=>{
-                e.preventDefault();
-               e.stopPropagation();
-                handleDeleteNotes();
-              }}>
+              <button
+                className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDeleteNotes();
+                }}
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
@@ -70,12 +71,12 @@ const NotesCard = ({note, classroom}) => {
                       if it only returns a relative path like '/uploads/file.pdf'
                     */}
             <a
-              href={`${API_URL}${note.fileUrl}`}
+              href={note.fileUrl} // ✅ REMOVED API_URL
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-xs font-semibold rounded-lg transition-colors border border-slate-700 hover:border-slate-600"
             >
-              <LucideBookOpenText className="w-3.5 h-3.5" /> Open
+              <LucideFileDown className="w-3.5 h-3.5" /> Download
             </a>
           </div>
         </div>

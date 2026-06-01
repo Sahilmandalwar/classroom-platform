@@ -1,7 +1,6 @@
 import API from "./api";
 
 export const fetchMessage = async(classId)=>{
-    console.log("fetchMessage...");
     const response = await API.get(`/message/${classId}`);
     return response.data;
 }

@@ -307,7 +307,6 @@ const AttendancePage = ({ activeTab, classroom, sessions, isTeacher }) => {
   };
 
 
-console.log(myAttendance)
   return (
     <div className="w-full max-w-7xl mx-auto pb-12 space-y-8 animate-fade-in-up">
       {/* 1. TEACHER VIEW */}

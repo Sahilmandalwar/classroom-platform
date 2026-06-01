@@ -66,6 +66,7 @@ const SessionPage = ({
           </div>
         ) : (
           <SessionList
+            classroom={classroom}
             sessions={sessions}
             isTeacher={isTeacher}
           />

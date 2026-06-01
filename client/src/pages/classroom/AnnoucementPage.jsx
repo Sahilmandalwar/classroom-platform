@@ -32,7 +32,6 @@ const AnnoucementPage = ({
 
   useEffect(()=>{
     socket.on("newAnnouncement", (data) => {
-      console.log("Live Announcement received: ", data);
       setAnnouncements((prev) => {
         const alreadyExist = prev.some((item) => 
           item._id === data.announcement._id
@@ -47,7 +46,6 @@ const AnnoucementPage = ({
     });
 
     socket.on("deletedAnnouncement", (data)=>{
-      console.log("Live Announcement deleted: ", data);
       setAnnouncements((prev)=>{
         const alreadyDeleted = !prev.some((item) => 
           item._id === data.deletedAnnouncement._id

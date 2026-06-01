@@ -1,6 +1,3 @@
-
-
-
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -60,7 +57,7 @@ const Sidebar = () => {
           <BookOpen className="text-white w-5 h-5" />
         </div>
         <h1 className="text-xl font-bold text-transparent bg-clip-text bg-linear-to-r from-white to-slate-400">
-          AI Classroom
+          Classroom
         </h1>
       </div>
 
@@ -107,7 +104,6 @@ const Sidebar = () => {
               {/* Fallback to 'Loading...' while fetching */}
               {user || "Loading..."}
             </span>
-            
           </div>
         </div>
       </div>

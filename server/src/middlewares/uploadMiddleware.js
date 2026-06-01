@@ -1,14 +1,17 @@
+
 import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
 
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "ai-classroom-notes",
+        resource_type: "auto",
+    },
 });
+
 
 export const upload = multer({ storage });
 

@@ -69,6 +69,7 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+     
       {
         path: "/*",
         element: <InvalidPage />,

@@ -5,8 +5,7 @@ import { deleteNotes, getClassroomNotes, uploadNotes } from "../controllers/note
 
 
 const router = express.Router();
-
-router.post("/upload/:classroomId",authMiddleware, upload.single('file'),uploadNotes);
+router.post("/upload/:classroomId", authMiddleware,upload.single('file'), uploadNotes);
 router.get("/:classroomId", authMiddleware, getClassroomNotes);
 router.delete('/:noteId', authMiddleware, deleteNotes);
 
