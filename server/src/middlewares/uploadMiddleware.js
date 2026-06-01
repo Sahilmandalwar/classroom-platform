@@ -8,7 +8,7 @@ const storage = new CloudinaryStorage({
     cloudinary,
     params: {
         folder: "ai-classroom-notes",
-        resource_type: "auto",
+        resource_type: "raw",
     },
 });
 

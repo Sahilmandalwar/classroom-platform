@@ -32,7 +32,7 @@ export const uploadNotes = async(req,res) =>{
 
         const notes = await Notes.create({
             title, description,
-            fileUrl: file.path,
+            fileUrl: file.secure_url,
             classroom : classroomId,
             createdBy
         })
